@@ -1,0 +1,45 @@
+--질의 1: 제목이 '반지의 제왕'인 비디오 테이프의 장르를 검색하라.
+SELECT GENRE
+FROM VIDEO
+WHERE TITLE = '반지의제왕';
+
+--질의 2: 예약된 비디오 테이프의 ID를 검색하라.
+SELECT VIDEO_ID
+FROM RESERVED;
+
+--질의 3: 예약되지 않은 비디오 테이프의 ID를 검색하라.
+(SELECT VIDEO_ID
+FROM video)
+MINUS
+(SELECT VIDEO_ID
+FROM RESERVED);
+
+--질의 4: 예약된 모든 비디오 테이프의 제목을 검색하라.
+SELECT DISTINCT TITLE
+FROM RESERVED R, VIDEO V
+WHERE R.VIDEO_ID = V.VIDEO_ID;
+
+--질의 5: 비디오 테이프를 예약한 고객의 이름을 검색하라.
+SELECT DISTINCT NAME  
+FROM CUSTOMER C, RESERVED R
+WHERE C.CUSTOMER_ID = R.CUSTOMER_ID;
+
+--질의 6: 장르가 '액션'인 비디오 테이프를 예약한 고객의 주소를 검색하라.
+SELECT ADDRESS
+FROM CUSTOMER C, RESERVED R, VIDEO V
+WHERE V.GENRE = '액션'
+AND C.customer_id = r.customer_id
+AND r.video_id = v.video_id;
+
+--질의 7: 장르가 '다큐멘터리'인 비디오 테이프를 모두 예약한 고객의 이름을 검색하라.
+SELECT C.NAME
+FROM CUSTOMER C
+WHERE NOT EXISTS 
+((SELECT V.VIDEO_ID--장르로 검색하면 안댐
+FROM VIDEO V
+WHERE GENRE = '다큐멘터리')
+MINUS
+(SELECT V1.VIDEO_ID
+FROM reserved R, video V1
+WHERE C.CUSTOMER_ID = R.CUSTOMER_ID
+AND v1.video_id = r.video_id));

@@ -1,0 +1,152 @@
+--질의1 : 가장 오래 근무한 사원에 관한 모든 데이터를 검색하라. 
+select *
+from employee
+where hiredate = ( select  min(hiredate)
+              from employee);
+
+--질의 2: 최종철과 같은 부서에 근무하는 사원에 관한 모든 데이터를 검색하라.
+select *
+from employee
+where DNO = ( SELECT DNO
+              FROM employee
+              WHERE EMPNAME = '최종철');
+
+--질의 3: 회사의 전체 사원 수를 검색하라.
+select COUNT(empname)
+from employee;
+
+--질의 4: 회사에 몇 개의 부서가 있는가를 검색하라.
+select DISTINCT COUNT(deptname)
+from department;
+
+--질의 5: 기획부에 근무하는 사원들의 이름과 직급을 검색하라.
+select EMPNAME, TITLE
+from EMPLOYEE E, department D
+WHERE e.dno = D.deptno
+      AND d.deptname = '기획'; 
+
+--질의 6: 한 명 이상의 사원이 근무하는 부서의 개수를 검색하라.
+select d.deptname
+from department D
+WHERE EXISTS
+      (select * FROM employee e
+      WHERE e.dno = d.deptno);
+
+--질의 7: 사원이 한 명도 근무하지 않는 부서를 검색하라.
+select d.deptname
+from department D
+WHERE not EXISTS
+      (select * FROM employee e
+      WHERE e.dno = d.deptno);
+
+--질의 8: 사원이 한 명이상 속한 부서에 대해서 평균 급여를 검색하라.
+select d.deptname, avg(salary)
+from EMPLOYEE E, department D
+WHERE e.dno = D.deptno 
+group by deptname; 
+
+--질의 9: 부서에 속한 사원들의 평균급여가 가장 많은 부서의 이름과 평균급여를 검색하라.
+select d.deptname, avg(salary)
+from employee e, department D
+where deptno = dno 
+group by d.deptname
+having avg(salary) = (select max(avg(salary)) FROM employee group by dno);
+
+
+--질의 10: EMPLOYEE와 DEPARTMENT릴레이션을 조인하고, 부서번호 순서에 따라 정렬하라.
+select DISTINCT E.dno
+from employee e,  department d
+WHERE e.dno = d.deptno
+order by dno;
+
+--질의 11: 모든 사원들을 직급별로 그룹화하고, 각 그룹별 사원 수와 평균급여를 검색하라.
+select title, count(empname), avg(salary)
+from employee e
+group by title;
+
+--질의 12: 모든 사원들을 직급별로 그룹화하고, 동일 직급을 갖는 사원 수가 2명 이상인 직급에 대해서 직급, 사원 수, 연간 급여를 검색하라. 
+select title, count(empname), sum(salary*12 )
+from employee
+group by title
+having count(title) >= 2;
+
+--질의 13: 직급이 대리인 사원이 적어도 2명 이상 속한 부서의 이름을 검색하라.
+select d.deptname
+from employee e, department d
+where e.dno = d.deptno
+and title = '대리'
+group by d.deptname
+having count(title) >= 2;
+ 
+--질의 14: 모든부서에 대해서 이름, 층, 각 부서에 근무하는 사원 수를 검색하라. 사원이 없는 부서도 포함시켜라.
+select deptname, floor, count(empno) as 사원수
+from  employee e, department d
+where d.deptno = e.dno 
+group by deptname, floor;
+
+--질의 15: 부서 1, 2, 3에 공통으로 있는 직급을 검색하라.
+SELECT TITLE
+FROM department, employee
+WHERE DNO IN (1, 2, 3)
+GROUP BY title
+HAVING COUNT(DISTINCT DNO) = 3;
+
+--질의 16: 개발부서에 근무하는 사원들의 직급과 직급별 사원 수를 검색하라. 사원 수가 많은 직급부터 표시하라.
+select title, count(empname)
+from  employee e, department d
+where e.dno = d.deptno
+and d.deptname = '개발'
+group by title;
+
+--질의 17: 평균급여가 가장 높은 부서의 부서번호와 이 부서의 최저 급여를 검색하라.
+SELECT dno, AVG(salary), MIN(salary)
+FROM employee e, department d
+where e.dno = d.deptno
+group by e.dno
+having avg(salary) = (select max (avg(salary)) FROM employee group by dno);
+
+--질의 18: 소속 사원 수가 4명 이하인 부서의 이름과 사원 수를 검색하라.
+select d.deptname, count(empname)
+from employee e, department d
+where e.dno = d.deptno
+group by d.deptname
+having count(empname) <= 4;
+
+--질의 19: 자신이 속한 부서의 평균 급여보다 많이 받는 사원의 이름, 부서번호, 급여를 검색하라.
+SELECT e.empname, e.dno, e.salary 
+FROM employee e
+where e.salary > (select avg(salary) FROM employee);
+
+--질의 20: 각 부서에서 가장 많은 급여를 받는 사원들의 이름, 부서번호, 급여를 검색하라.
+SELECT e.dno, e.empname, salary 
+FROM employee e, department d
+where d.deptno = e.dno
+group by e.dno, e.empname, e.salary
+having e.salary in (select max(salary) from employee group by dno);
+
+질의 21 --자체조인 사용 ★
+
+--질의 21: 모든 사원에 대해서 사원번호, 이름, 급여, 부서번호, 소속부서의 평균급여를 검색하라.
+SELECT e.empno, e.empname, e.salary, e.dno, (select avg(e1.salary) from employee e1 where e2.dno = e.dno ) as avgsal
+FROM employee e, department d
+group by e.empno, e.empname, e.salary, e.dno
+order by dno;
+
+--질의 22: 최종철 또는 이수민과 같은 직급을 가진 모든 사원에 대해서 사원의 이름과 직급을 검색하라.
+SELECT e.empname, e.title
+FROM employee e
+where title in (select title 
+               from employee
+               where empname = '최종철' or empname = '이수민');
+
+--질의 23: 기획 또는 총무 부서에 근무하지 않는 모든 사원들의 이름을 검색하라.
+SELECT empname, dno
+FROM employee e
+where not EXISTS (select *
+                  FROM department d
+                  where e.dno = d.deptno
+                  and (deptname = '기획' or deptname = '총무'));
+               
+
+
+
