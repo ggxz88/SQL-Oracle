@@ -1,0 +1,13 @@
+--¿­»ğÀÔ
+insert 
+into employee(fname, lname, dno, ssn) 
+values ('Richard', 'Marini' , 4, '653298653');
+--pk x
+insert
+into employee( fname, lname, ssn, dno)
+values('Robert', 'Hatcher', '663298653', 2);
+
+--PK NULL»ğÀÔ ºÒ°¡
+INSERT
+into employee (fname, lname, dno)
+values('Robert', 'Hatcher', 2);

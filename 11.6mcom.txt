@@ -1,0 +1,44 @@
+--중첩 질의를 이용 P212
+SELECT EMPNAME, TITLE
+FROM employee
+WHERE TITLE = (SELECT TITLE
+                FROM employee
+                WHERE EMPNAME = '박영권');
+
+--위의 질의를 조인을 이용(자체조인)
+SELECT E.EMPNAME, E.TITLE
+FROM EMPLOYEE E, EMPLOYEE P
+WHERE P.EMPNAME = '박영권' AND P.TITLE = E.TITLE;
+
+--중첩질의 사용 P215 영업부나 개발부에 근무하는 사원들의 이름을 검색하라
+SELECT EMPNAME 
+FROM EMPLOYEE
+WHERE DNO IN
+(
+SELECT DEPTNO
+FROM department
+WHERE deptname = '영업' OR deptname = '개발'
+);
+
+--조인사용
+SELECT EMPNAME
+FROM EMPLOYEE E, DEPARTMENT D
+WHERE E.DNO = d.deptno
+AND (deptname = '영업' OR deptname = '개발'); --괄호를 꼭 붙여야함
+
+--P216
+SELECT EMPNAME
+FROM employee E
+WHERE EXISTS(
+    SELECT * 
+    FROM DEPARTMENT D
+    WHERE E. DNO = d.deptno
+        AND(deptname = '영업' OR deptname = '개발'));
+        
+--자신이 속한 부서보다 더 많은 SALARY를 받는 사람의 이름과 그의 SALARY
+SELECT E.EMPNAME, E.DNO, E.SALARY
+FROM employee E
+WHERE salary >
+    (SELECT AVG(SALARY) FROM employee
+    WHERE DN0 = E.DNO);
+    
